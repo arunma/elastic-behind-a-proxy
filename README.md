@@ -24,7 +24,7 @@ docker-compose down
 ```
 
 ### 5. Finding IP of the container 
-(coz I am unable to make the DNS work)
+_(coz I am unable to make the DNS work)_
 
 Issue a `docker ps` and then use the `inspect` against the container name/container id : 
 
@@ -37,8 +37,6 @@ Alternatively, you could do a `docker inspect $INSTANCE_ID` and eye-ball to find
 (More help at https://docs.docker.com/engine/reference/commandline/inspect/#examples)
 
 # Verification
-
-In order to verify whether all is good, 
 
 ### Using the unauthenticated proxy to hit ElasticSearch
 
@@ -94,7 +92,7 @@ curl http://172.18.0.2:9200 --proxy http://localhost:3328 --proxy-user squid:XXX
 ```
 ##### Response
 
-~HTML OF ACCESS DENIED PAGE~
+_HTML OF ACCESS DENIED PAGE_
 
 
 (You wouldn’t be able to access the 172.* IP from your terminal)
