@@ -1,43 +1,51 @@
+# Installation
 
-1.	Install docker compose : 
+### 1. Install docker compose
 
 https://docs.docker.com/compose/install/#install-as-a-container
 
+### 2. Clone from Repo
 
-2.	Clone from xxxxxxxxx
+```
+git clone https://github.com/arunma/elastic-behind-a-proxy.git
+```
 
+### 3.	Bring up the containers 
 
-3.	Bring up the containers 
-
+```
 docker-compose up
+```
 
-4.	If you would like to bring down the containers, it’s docker-compose down
+### 4. If you would like to bring down the containers
 
-5.	For changing the squid.conf, go into the squid directory. You’ll have to rebuild the container for the changes to be picked up.  
+```
+docker-compose down
 
-docker-compose build
+```
 
-6.	For finding the IP of the container, issue a `docker ps` and then use the container name like so : 
+### 5. Finding IP of the container 
+(coz I am unable to make the DNS work)
 
+Issue a `docker ps` and then use the `inspect` against the container name/container id : 
 
-docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $INSTANCE_ID
+`docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $INSTANCE_ID`
 
-docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' elasticsearch
+eg. `docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' elasticsearch`
 
 Alternatively, you could do a `docker inspect $INSTANCE_ID` and eye-ball to find the IP. 
 
 (More help at https://docs.docker.com/engine/reference/commandline/inspect/#examples)
 
-7.	To bash access into the container,  
-
-docker exec -it $INSTANCE_ID bash
-
+# Verification
 
 In order to verify whether all is good, 
 
-Use the Unauthenticated proxy to hit ElasticSearch
+### Using the unauthenticated proxy to hit ElasticSearch
 
+```
 curl http://172.18.0.2:9200 --proxy http://localhost:3228
+```
+##### Response :
 
 ```
 {
@@ -55,7 +63,13 @@ curl http://172.18.0.2:9200 --proxy http://localhost:3228
 }
 ```
 
+Note that I've hardcoded the password as `changeme` in the ./squid_auth/passwd file.
+
+```
 curl http://172.18.0.2:9200 --proxy http://localhost:3328 --proxy-user squid:changeme
+```
+
+##### Response : 
 
 ```
 {
@@ -73,11 +87,14 @@ curl http://172.18.0.2:9200 --proxy http://localhost:3328 --proxy-user squid:cha
 }
 ```
 
+### Wrong password check
 
+```
 curl http://172.18.0.2:9200 --proxy http://localhost:3328 --proxy-user squid:XXXYYYYKKKK
+```
+##### Response
 
-##### HTML OF ACCESS DENIED PAGE
-
+~HTML OF ACCESS DENIED PAGE~
 
 
 (You wouldn’t be able to access the 172.* IP from your terminal)
