@@ -1,0 +1,84 @@
+version: '3'
+services:
+  dns:
+    image: andyshinn/dnsmasq:latest
+    ports:
+      - "53535:53"
+      - "53535:53/udp"
+    cap_add:  
+      - NET_ADMIN
+    command: --log-facility=- --address=/dev/127.0.0.1 --bind-interfaces
+    environment:
+      - listen-address=0.0.0.0
+      - user=root
+      - interace=esnet
+      - except-interface=lo
+
+    volumes:
+    - ./dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
+    - ./dnsmasq.d:/etc/dnsmasq.d
+
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - VIRTUAL_HOST=elasticsearch.dev
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    networks:
+      - esnet
+
+  squid:
+    build:
+      context: ./squid
+    container_name: squid
+    ports:
+      - "3228:3128"
+    volumes:
+      - spool:/var/spool/squid3
+      - squidlogs:/var/log/squid3
+      - guardlogs:/var/log/squidguard
+    environment:
+      - VIRTUAL_HOST=squid.dev 
+    networks:
+      - esnet
+      - external
+    restart: always
+
+
+  squid_auth:
+    build:
+      context: ./squid_auth
+    container_name: squid_auth
+    ports:
+      - "3328:3128"
+    volumes:
+      - spool_auth:/var/spool/squid3
+      - squidlogs_auth:/var/log/squid3
+      - guardlogs_auth:/var/log/squidguard
+    environment:
+      - VIRTUAL_HOST=squid_auth.dev
+    networks:
+      - esnet
+      - external
+    restart: always
+volumes:
+  spool:
+  squidlogs:
+  guardlogs:
+  spool_auth:
+  squidlogs_auth:
+  guardlogs_auth:
+networks:
+  esnet:
+    internal: true
+  external:
